@@ -1,4 +1,4 @@
-# ai_in_trading_simulation
+# Ai in trading simulation
 
 Here is AI, Model free reinforcement learning written from scratch, including optimization, neural networks, feature engineering, environment and backtesting
 
@@ -6,8 +6,8 @@ Optimizer is custom algorithm inspired by genetic algorithms, gradient descent a
 
 Computation is optimized for speed with numba and numpy libaries. 
 
-One result
-# Orange line is AI's profit fluctuation while trading:  
-# Blue is profit of baseline strategy, no trades, just scaled price data:
+
+Orange line is AI's profit fluctuation while trading:  
+Blue is profit of baseline strategy, no trades, just scaled price data:
 
 ![experiement](https://user-images.githubusercontent.com/93252944/150828656-e51b3e7b-e71c-4442-b86b-bf11880b9919.png)
