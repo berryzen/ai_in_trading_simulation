@@ -18,7 +18,7 @@ Computation is optimized for speed with numba and numpy libaries.
 - Agents runs throught sp500 close price data in training and testing.
 - Invested money is 100€ for both strategies. Then trading begins.
 
-## Results
+### Results
 - Orange line is AI's profit fluctuation while trading sp500.
 - Blue line is profit of baseline strategy, no trades. Line follows close price data.
  
