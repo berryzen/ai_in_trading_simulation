@@ -14,6 +14,7 @@ def order_minmax(upper_limit,under_limit):
     return upper_limit,under_limit    
 
 
+# Generates new weight values within given range
 @jit(nopython=True,fastmath = True)
 def mutation_7(pop_to_select,mutationrate,upper_limit,under_limit):
     mutateornot = np.random.binomial(1, (mutationrate),(pop_to_select.shape[0]))
@@ -33,6 +34,8 @@ def mutation_7(pop_to_select,mutationrate,upper_limit,under_limit):
 
     return pop_to_select
 
+# custom recursive sub-optimization function to slice solution space to smaller parts and search from there. Example single weight value's upper range is put lower
+# and new random variable is generated within this new range
 @jit(nopython=True,fastmath = True)
 def inner_improvement(old_best_weights,best_weights,best_fitness_memory,min_range,max_range,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count):
     meandistance = ((best_weights-old_best_weights)/2)
@@ -44,7 +47,7 @@ def inner_improvement(old_best_weights,best_weights,best_fitness_memory,min_rang
     first_round = False
     meandist_sum = (((np.sum(np.abs(upper_limit))/upper_limit.shape[0])+(np.sum(np.abs(under_limit)))/upper_limit.shape[0]))/2
     mutationrate = 0.7
-    No_improvement = 0
+    no_improvement = 0
     cut_out = 10
     cut_0 = 0
     cut_1 = int(cut_out/4) 
@@ -53,10 +56,10 @@ def inner_improvement(old_best_weights,best_weights,best_fitness_memory,min_rang
 
     for d in prange(100000):
         
-        if No_improvement > cut_out:
+        if no_improvement > cut_out:
             return best_weights, best_fitness_memory
 
-        if (No_improvement == cut_0) and (first_round == True): 
+        if (no_improvement == cut_0) and (first_round == True): 
             first_round = False
             upper_limit = np.where(upper_limit == 0.0,meandist_sum,0)
             under_limit = np.where(under_limit == 0.0,(-1)*meandist_sum,0)
@@ -66,7 +69,7 @@ def inner_improvement(old_best_weights,best_weights,best_fitness_memory,min_rang
             upper_limit = np.where(upper_limit>1.0,1.0,upper_limit)
             under_limit = np.where(under_limit<-1.0,-1.0,under_limit)
                         
-        elif No_improvement == cut_1:
+        elif no_improvement == cut_1:
             first_round = True
             upper_limit = np.where(upper_limit == 0,meandist_sum,0)
             under_limit = np.where(under_limit == 0,(-1)*meandist_sum,0)
@@ -76,7 +79,7 @@ def inner_improvement(old_best_weights,best_weights,best_fitness_memory,min_rang
             upper_limit = np.where(upper_limit>1.0,1.0,upper_limit)
             under_limit = np.where(under_limit<-1.0,-1.0,under_limit)
             
-        elif No_improvement == cut_2:
+        elif no_improvement == cut_2:
             upper_limit = np.where(upper_limit == 0,(1/10)*meandist_sum,0)
             under_limit = np.where(under_limit == 0,((-1/10))*meandist_sum,0)
             upper_limit = best_weights + upper_limit
@@ -85,7 +88,7 @@ def inner_improvement(old_best_weights,best_weights,best_fitness_memory,min_rang
             upper_limit = np.where(upper_limit>1.0,1.0,upper_limit)
             under_limit = np.where(under_limit<-1.0,-1.0,under_limit)
             
-        elif No_improvement == cut_3:
+        elif no_improvement == cut_3:
             upper_limit = np.where(upper_limit == 0,(1/10)*meandist_sum,0)
             under_limit = np.where(under_limit == 0,(-1/10)*meandist_sum,0)
             upper_limit = best_weights + upper_limit
@@ -105,13 +108,14 @@ def inner_improvement(old_best_weights,best_weights,best_fitness_memory,min_rang
             best_weights = new_weights.copy()
             best_fitness_memory = pop_fitness
             best_weights,best_fitness_memory = inner_improvement(old_best_weights,best_weights,best_fitness_memory,min_range,max_range,nn_architecture,observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count)
-            No_improvement = 0
+            no_improvement = 0
             
         else:
-            No_improvement = No_improvement + 1
+            no_improvement = no_improvement + 1
         
     return best_weights, best_fitness_memory
 
+# Selects best weights from population with criteria of general similarity to exponential average of good solution.
 @jit(nopython=True,fastmath = True)
 def best_model_selection_test(pop_fitness,best_fitness_memory,new_best_weights,best_weights,min_range,max_range,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count,mutationrate):
     units = 10+1
@@ -162,8 +166,11 @@ def best_model_selection_test(pop_fitness,best_fitness_memory,new_best_weights,b
 
     return best_fitness, best_weights
 
+# Main optimization function. Saves the best result from round and uses it as parent solution to generate new child solutions/weight arrays. 
+# So all the child's have some weights same as parent. Dynamically lowers the amount of new random weights if better solution is not found. Finally child solutions 
+# become similar with parent's weights as there is no improvement and optimizer will stop.
 @jit(nopython=True,fastmath = True)
-def random_walker_7(Rounds,init_weights,min_range,max_range,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count,mutationrate=0.7,mutationrate_decrease=0.2,fitness_no_improve_times_limit=15): 
+def random_walker_7(rounds,init_weights,min_range,max_range,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count,mutationrate=0.7,mutationrate_decrease=0.2,fitness_no_improve_times_limit=15): 
     
     fitness_no_improve_times = 0.0
     fitness_no_improve_times_noreset=1
@@ -176,7 +183,7 @@ def random_walker_7(Rounds,init_weights,min_range,max_range,nn_architecture, obs
     old_min_range = min_range.copy()
     old_max_range = max_range.copy()
     
-    for z in prange(Rounds):
+    for z in prange(rounds):
         
         new_weights_fit = new_weights.reshape((1, new_weights.shape[0]))
         pop_fitness,_,_ = get_fitness_values(new_weights_fit,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count)
@@ -255,10 +262,10 @@ def random_walker_7(Rounds,init_weights,min_range,max_range,nn_architecture, obs
     return best_fitness_memory,best_weights
 
 @jit(nopython=True, fastmath = True)
-def run_optimizer(optimizer_iterations,fitness_no_improve_times_limit,mutationrate_decrease,mutationrate,Number_of_models,pop_size,wandb_arr,feature_encoding_vars,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count):  
-    ensemble_weights_arr = np.zeros((Number_of_models,wandb_arr.shape[0]))
+def run_optimizer(optimizer_iterations,fitness_no_improve_times_limit,mutationrate_decrease,mutationrate,number_of_models,pop_size,wandb_arr,feature_encoding_vars,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count):  
+    ensemble_weights_arr = np.zeros((number_of_models,wandb_arr.shape[0]))
     
-    for i in prange(Number_of_models):
+    for i in prange(number_of_models):
         print("Model",i)
         population,var_list = init_swarm_with_range(pop_size,wandb_arr,feature_encoding_vars)
         best_fitness_memory,best_weights = random_walker_7(optimizer_iterations,population,var_list[:,0],var_list[:,1],nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count,mutationrate=0.7,mutationrate_decrease=0.2,fitness_no_improve_times_limit=550)

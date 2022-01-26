@@ -1,6 +1,7 @@
 import numpy as np
 from numba import jit
 
+# This initializes weights of neuralnetwork for population of ai agents, to get ready to run in simulation 
 @jit(nopython=True)
 def init_swarm_with_range(pop_size,wandb_arr,feature_encoding_vars):
     var_list = []

@@ -1,6 +1,8 @@
 import numpy as np
 from numba import jit, prange
 
+# lstm.py includes recurrent neural network named lstm - long short term memory
+
 def init_lstm_layers(lstm_architecture):
     input_size  = lstm_architecture[0] 
     hidden_dim  = lstm_architecture[1] 
@@ -91,6 +93,7 @@ def wandb_to_lstm_matrices(wandb_arr,lstm_architecture):
     
     return fc_weight,fc_bias,bias_ho,bias_hl,bias_hf,bias_hi,weights_ho,weights_hl,weights_hf,weights_hi,bias_xo,bias_xl,bias_xf,bias_xi,weights_xi,weights_xf,weights_xl,weights_xo
 
+# main lstm feed forward function
 @jit(nopython=True,fastmath = True)
 def lstm_feed_forward(next_state,h,c,fc_weight,fc_bias,bias_ho,bias_hl,bias_hf,bias_hi,weights_ho,weights_hl,weights_hf,weights_hi,bias_xo,bias_xl,bias_xf,bias_xi,weights_xi,weights_xf,weights_xl,weights_xo):
     f = forget_gate(next_state, h, weights_hf, bias_hf, weights_xf, bias_xf, c)

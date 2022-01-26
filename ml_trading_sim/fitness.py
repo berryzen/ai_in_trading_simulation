@@ -3,6 +3,9 @@ from numba import jit, prange
 from ml_trading_sim.lstm import wandb_to_lstm_matrices, lstm_feed_forward
 from ml_trading_sim.environment import RelativeTrade
 
+# Fitness.py computes cumulative product of profit(fitness) from all different agents in their simulation runs. Then this result is returned for optimizer
+
+# Single tradingbot is running through single simulation run to compute fitness
 @jit(nopython=True, fastmath = True)
 def personalfitness(wandb_arr,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count):
 
@@ -13,7 +16,7 @@ def personalfitness(wandb_arr,nn_architecture, observed_data,price_data,sim_len,
     wandb_arr = wandb_arr[featvars_count:]
 
     if observed_data.ndim == 1:
-        channel_data = Feature_optimization_func(featw, observed_data,sim_len).astype(np.float64)
+        channel_data = feature_optimization_func(featw, observed_data,sim_len).astype(np.float64)
     else: 
         channel_data = observed_data.astype(np.float64)
 
@@ -34,7 +37,7 @@ def personalfitness(wandb_arr,nn_architecture, observed_data,price_data,sim_len,
             
     return reward,maxreward,maxwallet2
 
-
+# Population of multiple tradingbots is running through simulation, result is returned to optimizer
 @jit(nopython=True,fastmath = True)
 def get_fitness_values(population,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count):
     fitness_values = np.ones((population.shape[0]))
@@ -44,7 +47,7 @@ def get_fitness_values(population,nn_architecture, observed_data,price_data,sim_
         fitness_values[i],maxfitness_values[i],maxfitness2_values[i] = personalfitness(population[i,:],nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count)
     return fitness_values,maxfitness_values,maxfitness2_values
 
-
+# In testing this is used for best performing agent to run single run, first running through training data and then continuing to testing data.
 @jit(nopython=True,fastmath = True)
 def personalfitness_test(ensemble_weights_arr,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count,min_arr,max_arr,trainig_len):
     nro_of_models = ensemble_weights_arr.shape[0]

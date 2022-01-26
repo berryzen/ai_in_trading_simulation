@@ -2,26 +2,33 @@ import numpy as np
 from numba import jit, prange, float64
 from ml_trading_sim.feature_engineering import minmax_scaler, sma, csmadist, remove_outliers, remove_outliers_price, _ewma
 
+# these functions compute input features for neural network
+
+# Relative distance between two different simple moving avarages of 1000 and 3
 @jit(nopython=True,fastmath = True)
 def feature1(featw, observed_data,sim_len):
     ch0back1 = sma(observed_data,int(1000))
     return sma(observed_data,int(3))/(ch0back1)
 
+# Relative distance between two different simple moving avarages of 100 and 3
 @jit(nopython=True,fastmath = True)
 def feature2(featw, observed_data,sim_len):
     ch0back1 = sma(observed_data,int(100))
     return sma(observed_data,int(3))/(ch0back1)
 
+# Relative distance between two different simple moving avarages of 10 and 2
 @jit(nopython=True,fastmath = True)
 def feature3(featw, observed_data,sim_len):
     ch0back1 = sma(observed_data,int((10)))
     return sma(observed_data,int(2))/(ch0back1)
 
+# Relative distance between two different moving avarages of 250 and 3
 @jit(nopython=True,fastmath = True)
 def feature4(featw, observed_data,sim_len):
     ch0back4 = _ewma(observed_data, int(np.abs(250)))
     return sma(observed_data,int(np.abs(3)))/((ch0back4))
 
+# Eelative distance between two different moving avarages of 25 and 2
 @jit(nopython=True,fastmath = True)
 def feature5(featw, observed_data,sim_len):
     ch0back4 = _ewma(observed_data, int(np.abs(25)))
@@ -32,6 +39,7 @@ def feature6(featw, observed_data,sim_len):
     ch0back4 = _ewma(observed_data, int(np.abs(3)))
     return observed_data/((ch0back4))
                        
+# Direction of change, 500 timesteps
 @jit(nopython=True,fastmath = True)
 def feature7(featw, observed_data,sim_len):
     pctsave = np.zeros(observed_data.shape[0])
@@ -39,6 +47,7 @@ def feature7(featw, observed_data,sim_len):
     pctsave[int(np.abs(500)):] = pctcl0se2
     return _ewma(pctsave, int(3))
                    
+# Direction of change, 50 timesteps
 @jit(nopython=True,fastmath = True)
 def feature8(featw, observed_data,sim_len):
     pctsave = np.zeros(observed_data.shape[0])
@@ -46,6 +55,7 @@ def feature8(featw, observed_data,sim_len):
     pctsave[int(np.abs(50)):] = pctcl0se2
     return _ewma(pctsave, int(2))
                    
+# Direction of change, 5 timesteps
 @jit(nopython=True,fastmath = True)
 def feature9(featw, observed_data,sim_len):
     pctsave = np.zeros(observed_data.shape[0])
@@ -138,7 +148,6 @@ def features_channels(featw, observed_data,sim_len):
     channels = channels[remove_nans:,:]
     return channels
 
-# get min/max values from observed dataset and dataset with features
 @jit(nopython=True,fastmath = True)
 def feature_optimization_func(featw, observed_data,sim_len):
     
@@ -151,9 +160,9 @@ def feature_optimization_func(featw, observed_data,sim_len):
     return channels
 
 @jit(nopython=True,fastmath = True)
-def get_minmax(WandB_arr,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count):
-    featw = WandB_arr[:featvars_count]
-    WandB_arr = WandB_arr[featvars_count:]
+def get_minmax(wandb_arr,nn_architecture, observed_data,price_data,sim_len,max1_limit, max2_limit,featvars_count):
+    featw = wandb_arr[:featvars_count]
+    wandb_arr = wandb_arr[featvars_count:]
     channels,minim,maxim = feature_optimization_func_get_minmax(featw, observed_data,sim_len)
     return minim,maxim
 
@@ -169,7 +178,7 @@ def feature_optimization_func_give_minmax(featw, observed_data,sim_len,min_arr,m
     
     return channels
 
-#Testidataan oma remove outliers näillä minmaxeilla
+# Get min/max values from observed dataset and dataset with features
 @jit(nopython=True,fastmath = True)
 def feature_optimization_func_get_minmax(featw, observed_data,sim_len):
 

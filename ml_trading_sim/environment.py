@@ -2,6 +2,7 @@ import numpy as np
 from numba.experimental import jitclass
 from numba import int32, float32, boolean,float64,int64    
 
+# This class gets buy, do nothing or sell action as input from neuralnetwork. Then reward/profit made with this action is computed and returned.
 spec = [
     ('_episode_ended', boolean),
     ('old_allocation',float32[:]),
