@@ -13,7 +13,7 @@ Computation is optimized for speed with numba and numpy libaries.
 
 ## Example
 - You can run this example from trading_simulation.ipynb
-- Agent tries to choose when to buy and when to sell while running through sp500 market data. Cost of buy or sell order is not included in simulation so result seem bit better.
+- Agent tries to choose when to buy or when to sell while running through sp500 market data. Cost of buy or sell order is not included in simulation so result seem bit better.
 
 - Agents runs throught sp500 close price data in training and testing.
 - Invested money is 100€ for both strategies. Then trading begins.
