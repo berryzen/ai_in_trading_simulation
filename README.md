@@ -20,7 +20,7 @@ Computation is optimized for speed with numba and numpy libaries.
 
 ## Results
 - Orange line is AI's profit fluctuation while trading sp500.
-- Blue is profit of baseline strategy, no trades, just scaled price data.
+- Blue line is profit of baseline strategy, no trades. Line follows close price data.
  
 ![trading_sim](https://user-images.githubusercontent.com/93252944/151146667-bb15c991-e2c6-4a3f-a80f-38e10e22f1ec.png)
 
